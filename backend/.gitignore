@@ -12,3 +12,5 @@ htmlcov/
 *.db-wal
 *.db-journal
 *.sqlite3
+# CSVs de carga do seed (grandes; fornecidos fora do repositório)
+data/
