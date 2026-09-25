@@ -1,12 +1,14 @@
 from collections.abc import AsyncIterator
 
 from sqlalchemy import event
+from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import ConnectionPoolEntry
 
 from app.core.config import get_settings
 
@@ -17,7 +19,9 @@ def enable_sqlite_foreign_keys(async_engine: AsyncEngine) -> None:
     """Habilita chaves estrangeiras em cada conexão SQLite."""
 
     @event.listens_for(async_engine.sync_engine, "connect")
-    def _set_sqlite_pragma(dbapi_connection: object, connection_record: object) -> None:
+    def _set_sqlite_pragma(
+        dbapi_connection: DBAPIConnection, connection_record: ConnectionPoolEntry
+    ) -> None:
         del connection_record
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
