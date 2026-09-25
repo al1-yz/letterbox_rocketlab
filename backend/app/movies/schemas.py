@@ -1,9 +1,9 @@
 """Contratos da API do catálogo, separados dos modelos ORM."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Annotated, Generic, Literal, Self, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ItemT = TypeVar("ItemT")
 
@@ -87,3 +87,27 @@ class MovieUpdate(BaseModel):
             if name in self.model_fields_set and getattr(self, name) is None:
                 raise ValueError(f"{name} não pode ser nulo")
         return self
+
+
+class Review(BaseModel):
+    id: str
+    nome: str
+    nota: float
+    comentario: str
+    created_at: datetime
+
+    @field_validator("created_at")
+    @classmethod
+    def assume_utc(cls, value: datetime) -> datetime:
+        # O SQLite grava CURRENT_TIMESTAMP em UTC, mas sem fuso. Sem marcar UTC,
+        # o navegador interpretaria o horário como local (3 horas de diferença).
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+
+class ReviewCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    # Tamanhos das colunas String(120) e String(4000); a faixa espelha o CHECK nota_range.
+    nome: Annotated[str, Field(min_length=1, max_length=120)]
+    nota: Annotated[float, Field(ge=0, le=10)]
+    comentario: Annotated[str, Field(min_length=1, max_length=4000)]

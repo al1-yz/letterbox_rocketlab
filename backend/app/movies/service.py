@@ -22,6 +22,8 @@ from app.movies.schemas import (
     MovieSummary,
     MovieUpdate,
     Page,
+    Review,
+    ReviewCreate,
 )
 
 
@@ -280,3 +282,45 @@ async def delete_movie(session: AsyncSession, movie_id: str) -> bool:
     )
     await session.commit()
     return deleted is not None
+
+
+async def movie_exists(session: AsyncSession, movie_id: str) -> bool:
+    found = await session.scalar(
+        select(DimMovie.sk_movie_id).where(DimMovie.sk_movie_id == movie_id)
+    )
+    return found is not None
+
+
+def to_review(review: MovieReview) -> Review:
+    return Review(
+        id=review.sk_movie_review_id,
+        nome=review.nome,
+        nota=review.nota,
+        comentario=review.comentario,
+        created_at=review.created_at,
+    )
+
+
+async def list_reviews(session: AsyncSession, movie_id: str) -> list[Review] | None:
+    if not await movie_exists(session, movie_id):
+        return None
+    reviews = await session.scalars(
+        select(MovieReview)
+        .where(MovieReview.sk_movie_id == movie_id)
+        # As avaliações do seed têm o mesmo horário; o id desempata de forma estável.
+        .order_by(MovieReview.created_at.desc(), MovieReview.sk_movie_review_id.desc())
+    )
+    return [to_review(review) for review in reviews]
+
+
+async def create_review(session: AsyncSession, movie_id: str, data: ReviewCreate) -> Review | None:
+    if not await movie_exists(session, movie_id):
+        return None
+    review = MovieReview(
+        sk_movie_id=movie_id, nome=data.nome, nota=data.nota, comentario=data.comentario
+    )
+    session.add(review)
+    await session.commit()
+    # created_at é preenchido pelo banco (server_default); o refresh o traz para o objeto.
+    await session.refresh(review)
+    return to_review(review)

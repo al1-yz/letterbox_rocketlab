@@ -14,6 +14,8 @@ from app.movies.schemas import (
     MovieSummary,
     MovieUpdate,
     Page,
+    Review,
+    ReviewCreate,
 )
 
 router = APIRouter()
@@ -97,3 +99,19 @@ async def update_movie(movie_id: str, data: MovieUpdate, session: SessionDep) ->
 async def delete_movie(movie_id: str, session: SessionDep) -> None:
     if not await service.delete_movie(session, movie_id):
         raise movie_not_found()
+
+
+@router.get("/movies/{movie_id}/reviews", tags=["reviews"])
+async def list_reviews(movie_id: str, session: SessionDep) -> list[Review]:
+    reviews = await service.list_reviews(session, movie_id)
+    if reviews is None:
+        raise movie_not_found()
+    return reviews
+
+
+@router.post("/movies/{movie_id}/reviews", status_code=status.HTTP_201_CREATED, tags=["reviews"])
+async def create_review(movie_id: str, data: ReviewCreate, session: SessionDep) -> Review:
+    review = await service.create_review(session, movie_id, data)
+    if review is None:
+        raise movie_not_found()
+    return review

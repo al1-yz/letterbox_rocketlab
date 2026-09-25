@@ -1,6 +1,7 @@
 """Infraestrutura dos testes da API: banco temporário, cliente HTTP e catálogo de exemplo."""
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -67,9 +68,13 @@ async def catalog(session_factory: async_sessionmaker[AsyncSession]) -> None:
         ],
         companies=[DimCompany(sk_company_id="c-a", nome_produtora="Studio A")],
         performance=FactMoviePerformance(popularidade=90.0),
+        # Horários explícitos: CURRENT_TIMESTAMP tem resolução de segundos e deixaria
+        # a ordem "mais recente primeiro" empatada dentro dos testes.
         reviews=[
-            MovieReview(nome="Rita", nota=8.0, comentario="Muito bom."),
-            MovieReview(nome="Caio", nota=6.0, comentario="Ok."),
+            MovieReview(
+                nome="Rita", nota=8.0, comentario="Muito bom.", created_at=datetime(2024, 1, 2)
+            ),
+            MovieReview(nome="Caio", nota=6.0, comentario="Ok.", created_at=datetime(2024, 1, 1)),
         ],
     )
     beta = DimMovie(
@@ -81,7 +86,11 @@ async def catalog(session_factory: async_sessionmaker[AsyncSession]) -> None:
             DimPerson(sk_person_id="p-diego", nome_pessoa="Diego Diretor", tipo_pessoa="Diretor")
         ],
         performance=FactMoviePerformance(popularidade=50.0),
-        reviews=[MovieReview(nome="Lia", nota=9.0, comentario="Excelente.")],
+        reviews=[
+            MovieReview(
+                nome="Lia", nota=9.0, comentario="Excelente.", created_at=datetime(2024, 1, 3)
+            )
+        ],
     )
     gamma = DimMovie(
         sk_movie_id="m-gamma",
