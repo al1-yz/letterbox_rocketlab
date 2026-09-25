@@ -43,6 +43,10 @@ export class ApiError extends Error {
   }
 }
 
+export function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
+
 async function readDetail(response: Response): Promise<unknown> {
   try {
     const body: unknown = await response.json()
