@@ -16,6 +16,7 @@ from sqlalchemy import (
     Date,
     Double,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -191,6 +192,10 @@ class FactMoviePerformance(Base):
     """Métricas financeiras e de engajamento; uma ocorrência por filme."""
 
     __tablename__ = "fact_movies_performance"
+    __table_args__ = (
+        # Sustenta a ordenação padrão do catálogo (popularidade decrescente).
+        Index("ix_fact_movies_performance_popularidade", "popularidade", "sk_movie_id"),
+    )
 
     sk_movie_id: Mapped[str] = mapped_column(
         String(64), ForeignKey("dim_movies.sk_movie_id", ondelete="CASCADE"), primary_key=True
