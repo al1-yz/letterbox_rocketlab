@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+:root {
+  /* Controles nativos (select, date, scrollbar) no tema escuro da aplicação. */
+  color-scheme: dark;
+}
