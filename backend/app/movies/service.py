@@ -3,7 +3,7 @@
 import math
 from collections.abc import Iterable, Sequence
 
-from sqlalchemy import ColumnElement, Select, func, select
+from sqlalchemy import ColumnElement, Select, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -15,7 +15,22 @@ from app.movies.models import (
     MovieReview,
     bridge_movie_genre,
 )
-from app.movies.schemas import MovieDetail, MovieSort, MovieSummary, Page
+from app.movies.schemas import (
+    MovieCreate,
+    MovieDetail,
+    MovieSort,
+    MovieSummary,
+    MovieUpdate,
+    Page,
+)
+
+
+class UnknownGenresError(Exception):
+    """Gêneros enviados pelo cliente que não existem em dim_genres."""
+
+    def __init__(self, names: list[str]) -> None:
+        super().__init__(", ".join(names))
+        self.names = names
 
 
 async def list_genres(session: AsyncSession) -> list[str]:
@@ -171,3 +186,97 @@ async def get_movie(session: AsyncSession, movie_id: str) -> MovieDetail | None:
         media=average,
         total_avaliacoes=count,
     )
+
+
+async def genres_by_name(session: AsyncSession, names: Sequence[str]) -> list[DimGenre]:
+    """Resolve os nomes para gêneros existentes; nomes repetidos contam uma vez."""
+
+    unique = list(dict.fromkeys(names))
+    rows = await session.scalars(select(DimGenre).where(DimGenre.nome_genero.in_(unique)))
+    found = {genre.nome_genero: genre for genre in rows}
+    missing = [name for name in unique if name not in found]
+    if missing:
+        raise UnknownGenresError(missing)
+    return [found[name] for name in unique]
+
+
+async def directors_by_name(session: AsyncSession, names: Sequence[str]) -> list[DimPerson]:
+    """Reaproveita as pessoas com papel de Diretor e cria as que ainda não existem."""
+
+    unique = list(dict.fromkeys(names))
+    rows = await session.scalars(
+        select(DimPerson).where(
+            DimPerson.tipo_pessoa == "Diretor", DimPerson.nome_pessoa.in_(unique)
+        )
+    )
+    existing = {person.nome_pessoa: person for person in rows}
+    return [
+        existing.get(name) or DimPerson(nome_pessoa=name, tipo_pessoa="Diretor") for name in unique
+    ]
+
+
+async def load_detail(session: AsyncSession, movie_id: str) -> MovieDetail:
+    detail = await get_movie(session, movie_id)
+    if detail is None:
+        raise LookupError(f"filme {movie_id} deveria existir após a gravação")
+    return detail
+
+
+async def create_movie(session: AsyncSession, data: MovieCreate) -> MovieDetail:
+    movie = DimMovie(
+        titulo=data.titulo,
+        ano_lancamento=data.ano_lancamento,
+        sinopse=data.sinopse,
+        url_poster=data.url_poster,
+        genres=await genres_by_name(session, data.generos),
+        people=await directors_by_name(session, data.diretores),
+        # Mantém a invariante da listagem: todo filme tem uma linha no fato.
+        performance=FactMoviePerformance(),
+    )
+    session.add(movie)
+    await session.commit()
+    return await load_detail(session, movie.sk_movie_id)
+
+
+async def update_movie(
+    session: AsyncSession, movie_id: str, data: MovieUpdate
+) -> MovieDetail | None:
+    movie = await session.scalar(
+        select(DimMovie)
+        .where(DimMovie.sk_movie_id == movie_id)
+        .options(selectinload(DimMovie.genres), selectinload(DimMovie.people))
+    )
+    if movie is None:
+        return None
+
+    # Obrigatórios nunca chegam como None quando enviados (o schema recusa null),
+    # então "is not None" significa "foi enviado". Nos opcionais, null apaga o valor;
+    # por isso a presença é conferida em model_fields_set.
+    sent = data.model_fields_set
+    if data.titulo is not None:
+        movie.titulo = data.titulo
+    if "ano_lancamento" in sent:
+        movie.ano_lancamento = data.ano_lancamento
+    if "sinopse" in sent:
+        movie.sinopse = data.sinopse
+    if "url_poster" in sent:
+        movie.url_poster = data.url_poster
+    if data.generos is not None:
+        movie.genres = await genres_by_name(session, data.generos)
+    if data.diretores is not None:
+        # Troca só os diretores: elenco e roteiristas continuam vinculados.
+        others = [person for person in movie.people if person.tipo_pessoa != "Diretor"]
+        movie.people = others + await directors_by_name(session, data.diretores)
+
+    await session.commit()
+    return await load_detail(session, movie_id)
+
+
+async def delete_movie(session: AsyncSession, movie_id: str) -> bool:
+    # Um único DELETE: o ON DELETE CASCADE do banco (FKs ligadas nas conexões da
+    # aplicação) remove vínculos, fato e avaliações sem carregá-los no ORM.
+    deleted = await session.scalar(
+        delete(DimMovie).where(DimMovie.sk_movie_id == movie_id).returning(DimMovie.sk_movie_id)
+    )
+    await session.commit()
+    return deleted is not None
