@@ -95,7 +95,8 @@ class DimMovie(Base):
     sk_movie_id: Mapped[str] = mapped_column(
         String(64), primary_key=True, default=generate_surrogate_key
     )
-    id_filme: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    # Id externo (TMDB); nulo para filmes cadastrados localmente.
+    id_filme: Mapped[str | None] = mapped_column(String(50), unique=True, index=True, default=None)
     titulo: Mapped[str] = mapped_column(String(500), index=True)
     data_lancamento: Mapped[date | None] = mapped_column(Date, default=None)
     ano_lancamento: Mapped[int | None] = mapped_column(Integer, index=True, default=None)
