@@ -1,4 +1,18 @@
+import { Link } from 'react-router'
+
 // Estados de carregamento, erro e vazio, reaproveitados por todas as telas.
+
+export function MovieNotFound() {
+  return (
+    <section className="py-16 text-center">
+      <h1 className="text-2xl font-bold">Filme não encontrado</h1>
+      <p className="mt-2 text-zinc-400">Ele pode ter sido removido do catálogo.</p>
+      <Link to="/" className="mt-6 inline-block text-amber-400 hover:underline">
+        Voltar ao catálogo
+      </Link>
+    </section>
+  )
+}
 
 export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
   return (

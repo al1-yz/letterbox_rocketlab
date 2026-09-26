@@ -1,4 +1,5 @@
 import { NavLink, Route, Routes } from 'react-router'
+import FlashMessage from './components/FlashMessage.tsx'
 import CatalogPage from './pages/CatalogPage.tsx'
 import MovieCreatePage from './pages/MovieCreatePage.tsx'
 import MovieDetailPage from './pages/MovieDetailPage.tsx'
@@ -28,6 +29,7 @@ export default function App() {
           </NavLink>
         </nav>
       </header>
+      <FlashMessage />
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Routes>
           <Route path="/" element={<CatalogPage />} />

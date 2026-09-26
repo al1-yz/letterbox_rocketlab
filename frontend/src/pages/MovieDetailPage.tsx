@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router'
 import { isNotFound } from '../api/client.ts'
+import DeleteMovieButton from '../components/DeleteMovieButton.tsx'
 import MovieInfo from '../components/MovieInfo.tsx'
 import ReviewForm from '../components/ReviewForm.tsx'
 import ReviewList from '../components/ReviewList.tsx'
-import { ErrorState, LoadingState } from '../components/States.tsx'
+import { ErrorState, LoadingState, MovieNotFound } from '../components/States.tsx'
 import { useMovie, useReviews } from '../hooks/queries.ts'
 
 export default function MovieDetailPage() {
@@ -13,17 +14,7 @@ export default function MovieDetailPage() {
 
   if (movie.isPending) return <LoadingState label="Carregando filme…" />
   if (movie.isError) {
-    if (isNotFound(movie.error)) {
-      return (
-        <section className="py-16 text-center">
-          <h1 className="text-2xl font-bold">Filme não encontrado</h1>
-          <p className="mt-2 text-zinc-400">Ele pode ter sido removido do catálogo.</p>
-          <Link to="/" className="mt-6 inline-block text-amber-400 hover:underline">
-            Voltar ao catálogo
-          </Link>
-        </section>
-      )
-    }
+    if (isNotFound(movie.error)) return <MovieNotFound />
     return <ErrorState error={movie.error} onRetry={() => movie.refetch()} />
   }
 
@@ -31,7 +22,18 @@ export default function MovieDetailPage() {
     <div className="flex flex-col gap-12">
       {/* React 19 leva o <title> para o <head>: a aba mostra o filme aberto. */}
       <title>{`${movie.data.titulo} · Catálogo de Filmes`}</title>
-      <MovieInfo movie={movie.data} />
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-end gap-3">
+          <Link
+            to={`/movies/${id}/edit`}
+            className="rounded-md border border-zinc-700 px-4 py-2 font-semibold hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          >
+            Editar
+          </Link>
+          <DeleteMovieButton movieId={id} title={movie.data.titulo} />
+        </div>
+        <MovieInfo movie={movie.data} />
+      </div>
 
       <section aria-labelledby="reviews-title" className="flex flex-col gap-6">
         <h2 id="reviews-title" className="text-2xl font-bold">

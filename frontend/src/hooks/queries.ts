@@ -1,6 +1,15 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createReview, getMovie, listGenres, listMovies, listReviews } from '../api/movies.ts'
-import type { MovieFilters, ReviewInput } from '../api/types.ts'
+import {
+  createMovie,
+  createReview,
+  deleteMovie,
+  getMovie,
+  listGenres,
+  listMovies,
+  listReviews,
+  updateMovie,
+} from '../api/movies.ts'
+import type { MovieFilters, MovieInput, MovieUpdate, ReviewInput } from '../api/types.ts'
 
 // Chaves centralizadas: consultas e invalidações usam sempre as mesmas.
 export const queryKeys = {
@@ -45,5 +54,42 @@ export function useCreateReview(movieId: string) {
         queryClient.invalidateQueries({ queryKey: queryKeys.movie(movieId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.movies }),
       ]),
+  })
+}
+
+export function useCreateMovie() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (movie: MovieInput) => createMovie(movie),
+    onSuccess: (created) => {
+      // A resposta já é o detalhe completo: a próxima tela abre sem nova requisição.
+      queryClient.setQueryData(queryKeys.movie(created.id), created)
+      return queryClient.invalidateQueries({ queryKey: queryKeys.movies })
+    },
+  })
+}
+
+export function useUpdateMovie(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (changes: MovieUpdate) => updateMovie(id, changes),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.movie(id), updated)
+      return queryClient.invalidateQueries({ queryKey: queryKeys.movies })
+    },
+  })
+}
+
+export function useDeleteMovie(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => deleteMovie(id),
+    onSuccess: () => {
+      // O filme deixou de existir: tira detalhe e avaliações do cache, para
+      // "voltar" no navegador não mostrar dados de um filme apagado.
+      queryClient.removeQueries({ queryKey: queryKeys.movie(id) })
+      queryClient.removeQueries({ queryKey: queryKeys.reviews(id) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.movies })
+    },
   })
 }
