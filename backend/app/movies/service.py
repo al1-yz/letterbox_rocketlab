@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.movies.models import (
+    TITLE_SORT_KEY,
     DimGenre,
     DimMovie,
     DimPerson,
@@ -72,7 +73,7 @@ async def genre_names(session: AsyncSession, movie_ids: Sequence[str]) -> dict[s
 
 def order_movies(statement: Select, sort: MovieSort, *, searching: bool) -> Select:
     if sort == "title":
-        return statement.order_by(DimMovie.titulo, DimMovie.sk_movie_id)
+        return statement.order_by(*TITLE_SORT_KEY, DimMovie.sk_movie_id)
     if sort == "recent":
         return statement.order_by(DimMovie.ano_lancamento.desc(), DimMovie.sk_movie_id.desc())
     if sort == "rating":
@@ -257,7 +258,7 @@ async def update_movie(
     sent = data.model_fields_set
     if data.titulo is not None:
         movie.titulo = data.titulo
-    if "ano_lancamento" in sent:
+    if data.ano_lancamento is not None:
         movie.ano_lancamento = data.ano_lancamento
     if "sinopse" in sent:
         movie.sinopse = data.sinopse

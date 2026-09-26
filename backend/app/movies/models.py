@@ -23,6 +23,7 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -87,11 +88,32 @@ bridge_movie_person = Table(
     ),
 )
 
+# Ordem de "Título (A–Z)": letras primeiro, depois números, depois símbolos; entre
+# as letras, sem diferenciar maiúsculas. Só funções nativas do SQLite, para caber
+# num índice. Sem ICU, lower() converte apenas ASCII: títulos com inicial acentuada
+# ou de outros alfabetos ficam depois do Z. U+2000–U+2BFF (aspas curvas, ★) é símbolo.
+TITLE_SORT_KEY = (
+    text(
+        """CASE
+    WHEN unicode(titulo) BETWEEN 48 AND 57 THEN 1
+    WHEN unicode(titulo) BETWEEN 65 AND 90
+        OR unicode(titulo) BETWEEN 97 AND 122
+        OR unicode(titulo) BETWEEN 192 AND 8191
+        OR unicode(titulo) >= 11264 THEN 0
+    ELSE 2
+END"""
+    ),
+    text("lower(titulo)"),
+)
 
 class DimMovie(Base):
     """Metadados descritivos de um filme."""
 
     __tablename__ = "dim_movies"
+    __table_args__ = (
+        # A consulta precisa repetir exatamente estas expressões para o índice ser usado.
+        Index("ix_dim_movies_titulo_ordem", *TITLE_SORT_KEY, "sk_movie_id"),
+    )
 
     sk_movie_id: Mapped[str] = mapped_column(
         String(64), primary_key=True, default=generate_surrogate_key

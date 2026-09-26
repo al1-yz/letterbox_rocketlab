@@ -1,5 +1,8 @@
 import httpx
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from app.movies.models import DimMovie, FactMoviePerformance
 
 pytestmark = pytest.mark.usefixtures("catalog")
 
@@ -68,6 +71,32 @@ async def test_list_movies_sorts(client: httpx.AsyncClient, sort: str, expected:
 
     assert ids(body) == expected
 
+async def test_sort_by_title_puts_letters_then_digits_then_symbols(
+    client: httpx.AsyncClient, session_factory: async_sessionmaker[AsyncSession]
+) -> None:
+    # Na ordem binária do SQLite, símbolos e números viriam antes das letras,
+    # e as minúsculas depois de todas as maiúsculas.
+    titles = ["#Alive", "1917", "(500) Days", "zebra", "Élite", "“Quoted”"]
+    async with session_factory() as session:
+        session.add_all(
+            DimMovie(titulo=title, ano_lancamento=2000, performance=FactMoviePerformance())
+            for title in titles
+        )
+        await session.commit()
+
+    body = (await client.get("/api/v1/movies", params={"sort": "title"})).json()
+
+    assert [movie["titulo"] for movie in body["items"]] == [
+        "Amber Road",
+        "Beta Love",
+        "zebra",
+        "Zodiac Night",
+        "Élite",  # inicial acentuada: letra, mas depois do Z (lower() só converte ASCII)
+        "1917",
+        "#Alive",
+        "(500) Days",
+        "“Quoted”",  # aspas curvas contam como símbolo
+    ]
 
 @pytest.mark.parametrize("params", [{"page": 0}, {"page_size": 101}, {"sort": "random"}])
 async def test_list_movies_rejects_invalid_params(

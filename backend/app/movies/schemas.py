@@ -62,7 +62,8 @@ class MovieCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     titulo: Titulo
-    ano_lancamento: int | None = None
+    # Obrigatório no cadastro; a coluna continua anulável por compatibilidade com a base.
+    ano_lancamento: int    
     sinopse: Sinopse | None = None
     url_poster: UrlPoster | None = None
     generos: Generos
@@ -83,7 +84,7 @@ class MovieUpdate(BaseModel):
 
     @model_validator(mode="after")
     def reject_null_in_required_fields(self) -> Self:
-        for name in ("titulo", "generos", "diretores"):
+        for name in ("titulo", "ano_lancamento", "generos", "diretores"):
             if name in self.model_fields_set and getattr(self, name) is None:
                 raise ValueError(f"{name} não pode ser nulo")
         return self

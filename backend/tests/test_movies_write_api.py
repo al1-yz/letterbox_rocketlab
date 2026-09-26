@@ -57,6 +57,7 @@ async def test_create_movie_returns_201_and_the_detail(
     [
         pytest.param({"titulo": "   "}, id="blank-title"),
         pytest.param({"titulo": "x" * 501}, id="title-too-long"),
+        pytest.param({"ano_lancamento": None}, id="null-year"),
         pytest.param({"sinopse": "x" * 4001}, id="synopsis-too-long"),
         pytest.param({"generos": []}, id="no-genre"),
         pytest.param({"diretores": []}, id="no-director"),
@@ -70,6 +71,13 @@ async def test_create_movie_rejects_invalid_payload(
 
     assert response.status_code == 422
 
+async def test_create_movie_requires_year(client: httpx.AsyncClient) -> None:
+    payload = {key: value for key, value in NEW_MOVIE.items() if key != "ano_lancamento"}
+
+    response = await client.post("/api/v1/movies", json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "ano_lancamento"]
 
 async def test_create_movie_with_unknown_genre_returns_422_and_creates_nothing(
     client: httpx.AsyncClient,
@@ -106,13 +114,13 @@ async def test_patch_replaces_directors_and_keeps_cast(client: httpx.AsyncClient
 
 
 async def test_patch_clears_optional_field_with_null(client: httpx.AsyncClient) -> None:
-    response = await client.patch("/api/v1/movies/m-alpha", json={"ano_lancamento": None})
-
+    created = (await client.post("/api/v1/movies", json=NEW_MOVIE)).json()
+    response = await client.patch(f"/api/v1/movies/{created['id']}", json={"sinopse": None})
     assert response.status_code == 200
-    assert response.json()["ano_lancamento"] is None
+    assert response.json()["sinopse"] is None
 
 
-@pytest.mark.parametrize("field", ["titulo", "generos", "diretores"])
+@pytest.mark.parametrize("field", ["titulo", "ano_lancamento", "generos", "diretores"])
 async def test_patch_rejects_null_in_required_field(client: httpx.AsyncClient, field: str) -> None:
     response = await client.patch("/api/v1/movies/m-alpha", json={field: None})
 
