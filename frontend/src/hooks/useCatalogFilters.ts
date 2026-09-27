@@ -20,7 +20,8 @@ export function useCatalogFilters() {
     page: Number.isInteger(page) && page > 0 ? page : 1,
   }
 
-  function updateFilters(changes: Partial<MovieFilters>): void {
+  // replace: corrige a URL sem criar uma entrada nova no histórico.
+  function updateFilters(changes: Partial<MovieFilters>, { replace = false } = {}): void {
     // Mudar busca, gênero ou ordenação sempre volta para a primeira página.
     const next: MovieFilters = { ...filters, page: 1, ...changes }
     const search = new URLSearchParams()
@@ -28,7 +29,7 @@ export function useCatalogFilters() {
     if (next.genre) search.set('genre', next.genre)
     if (next.sort !== 'popularity') search.set('sort', next.sort)
     if (next.page > 1) search.set('page', String(next.page))
-    setParams(search)
+    setParams(search, { replace })
   }
 
   return { filters, updateFilters }

@@ -6,6 +6,7 @@ import ReviewForm from '../components/ReviewForm.tsx'
 import ReviewList from '../components/ReviewList.tsx'
 import { ErrorState, LoadingState, MovieNotFound } from '../components/States.tsx'
 import { useMovie, useReviews } from '../hooks/queries.ts'
+import { formatTitle } from '../utils/format.ts'
 
 export default function MovieDetailPage() {
   const { id = '' } = useParams()
@@ -18,10 +19,12 @@ export default function MovieDetailPage() {
     return <ErrorState error={movie.error} onRetry={() => movie.refetch()} />
   }
 
+  const title = formatTitle(movie.data.titulo)
+
   return (
     <div className="flex flex-col gap-12">
       {/* React 19 leva o <title> para o <head>: a aba mostra o filme aberto. */}
-      <title>{`${movie.data.titulo} · Catálogo de Filmes`}</title>
+      <title>{`${title} · Catálogo de Filmes`}</title>
       <div className="flex flex-col gap-4">
         <div className="flex justify-end gap-3">
           <Link
@@ -30,7 +33,7 @@ export default function MovieDetailPage() {
           >
             Editar
           </Link>
-          <DeleteMovieButton movieId={id} title={movie.data.titulo} />
+          <DeleteMovieButton movieId={id} title={title} />
         </div>
         <MovieInfo movie={movie.data} />
       </div>

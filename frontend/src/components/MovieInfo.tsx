@@ -1,5 +1,5 @@
 import type { MovieDetail } from '../api/types.ts'
-import { formatDuration, formatRating, pluralize } from '../utils/format.ts'
+import { formatDuration, formatRating, formatTitle, pluralize } from '../utils/format.ts'
 import Poster from './Poster.tsx'
 
 interface MovieInfoProps {
@@ -17,6 +17,7 @@ function Credits({ label, names }: { label: string; names: string[] }) {
 }
 
 export default function MovieInfo({ movie }: MovieInfoProps) {
+  const title = formatTitle(movie.titulo)
   const details = [
     movie.ano_lancamento,
     movie.duracao_minutos !== null && formatDuration(movie.duracao_minutos),
@@ -25,10 +26,10 @@ export default function MovieInfo({ movie }: MovieInfoProps) {
 
   return (
     <article className="grid gap-8 md:grid-cols-[16rem_1fr]">
-      <Poster url={movie.url_poster} title={movie.titulo} className="max-w-64" />
+      <Poster url={movie.url_poster} title={title} className="max-w-64" />
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{movie.titulo}</h1>
+          <h1 className="text-3xl font-bold">{title}</h1>
           {details.length > 0 && <p className="mt-1 text-zinc-400">{details.join(' · ')}</p>}
         </div>
 

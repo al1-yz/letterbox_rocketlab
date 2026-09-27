@@ -19,6 +19,24 @@ export function formatDateTime(iso: string): string {
   return dateTime.format(new Date(iso))
 }
 
+// Palavra de I, V e X com só a inicial maiúscula ("Ii", "Viii"), isolada por
+// caracteres que não são letras nem dígitos ("Xixón" e "6ix" ficam de fora).
+const ROMAN_TOKEN = /(?<![\p{L}\p{N}])[IVX][ivx]+(?![\p{L}\p{N}])/gu
+const ROMAN_NUMERAL = /^X{0,3}(IX|IV|V?I{0,3})$/
+// Também são palavras e nomes na base: "Me Vi", "Xi Jinping".
+const AMBIGUOUS = new Set(['VI', 'XI'])
+
+/**
+ * A base grava títulos em Title Case ("The Nun Ii"). Só na exibição, numerais
+ * romanos claros voltam a maiúsculas; o valor armazenado não muda.
+ */
+export function formatTitle(title: string): string {
+  return title.replace(ROMAN_TOKEN, (token) => {
+    const upper = token.toUpperCase()
+    return ROMAN_NUMERAL.test(upper) && !AMBIGUOUS.has(upper) ? upper : token
+  })
+}
+
 /** 102 → "1h 42min". */
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60)

@@ -36,6 +36,7 @@ export interface MovieDetail extends MovieSummary {
 
 export interface MovieInput {
   titulo: string
+  // Obrigatório na API; null só no formulário em branco (validate() não deixa enviar).
   ano_lancamento: number | null
   sinopse: string | null
   url_poster: string | null

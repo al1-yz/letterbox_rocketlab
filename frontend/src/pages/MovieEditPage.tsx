@@ -5,6 +5,7 @@ import type { FlashState } from '../components/FlashMessage.tsx'
 import MovieForm from '../components/MovieForm.tsx'
 import { ErrorState, LoadingState, MovieNotFound } from '../components/States.tsx'
 import { useMovie, useUpdateMovie } from '../hooks/queries.ts'
+import { formatTitle } from '../utils/format.ts'
 import { changedFields, toMovieInput } from '../utils/movie.ts'
 
 export default function MovieEditPage() {
@@ -39,7 +40,7 @@ export default function MovieEditPage() {
 
   return (
     <section aria-labelledby="edit-title" className="mx-auto flex max-w-3xl flex-col gap-6">
-      <title>{`Editar ${movie.data.titulo} · Catálogo de Filmes`}</title>
+      <title>{`Editar ${formatTitle(movie.data.titulo)} · Catálogo de Filmes`}</title>
       <h1 id="edit-title" className="text-2xl font-bold">
         Editar filme
       </h1>

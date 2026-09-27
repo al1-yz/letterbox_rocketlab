@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import type { MovieSummary } from '../api/types.ts'
+import { formatTitle } from '../utils/format.ts'
 import Poster from './Poster.tsx'
 import Rating from './Rating.tsx'
 
@@ -8,14 +9,15 @@ interface MovieCardProps {
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
+  const title = formatTitle(movie.titulo)
   return (
     <Link
       to={`/movies/${movie.id}`}
       className="group block rounded-lg p-2 transition-colors hover:bg-zinc-900 focus-visible:outline-2 focus-visible:outline-amber-400"
     >
-      <Poster url={movie.url_poster} title={movie.titulo} />
+      <Poster url={movie.url_poster} title={title} />
       <h2 className="mt-2 line-clamp-2 font-semibold text-white group-hover:text-amber-400">
-        {movie.titulo}
+        {title}
       </h2>
       <p className="text-sm text-zinc-400">
         {movie.ano_lancamento ?? 'Ano desconhecido'}

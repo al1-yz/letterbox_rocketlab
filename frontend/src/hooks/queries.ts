@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createMovie,
   createReview,
@@ -24,8 +24,9 @@ export function useMovies(filters: MovieFilters) {
   return useQuery({
     queryKey: queryKeys.movieList(filters),
     queryFn: () => listMovies(filters),
-    // Mantém a página atual na tela enquanto a próxima carrega.
-    placeholderData: keepPreviousData,
+    // Mantém a página atual na tela enquanto a próxima carrega. Uma lista vazia não
+    // é mantida: pareceria "nenhum filme encontrado" durante o carregamento.
+    placeholderData: (previous) => (previous?.items.length ? previous : undefined),
   })
 }
 

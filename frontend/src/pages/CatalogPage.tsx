@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import CatalogFilters from '../components/CatalogFilters.tsx'
 import MovieCard from '../components/MovieCard.tsx'
 import Pagination from '../components/Pagination.tsx'
@@ -10,13 +11,23 @@ export default function CatalogPage() {
   const { filters, updateFilters } = useCatalogFilters()
   const movies = useMovies(filters)
 
+  // ?page=99999 digitado na URL: com o total real conhecido (não o da página
+  // anterior mantida na tela), a página passa a ser a última válida.
+  const lastPage =
+    movies.isSuccess && !movies.isPlaceholderData ? Math.max(movies.data.pages, 1) : null
+  const correctedPage = lastPage !== null && filters.page > lastPage ? lastPage : null
+  useEffect(() => {
+    // replace: o Voltar do navegador não retorna para a URL impossível.
+    if (correctedPage !== null) updateFilters({ page: correctedPage }, { replace: true })
+  }, [correctedPage, updateFilters])
+
   function goToPage(page: number): void {
     updateFilters({ page })
     window.scrollTo({ top: 0 })
   }
 
   let results
-  if (movies.isPending) {
+  if (movies.isPending || correctedPage !== null) {
     results = <LoadingState label="Carregando filmes…" />
   } else if (movies.isError) {
     results = <ErrorState error={movies.error} onRetry={() => movies.refetch()} />

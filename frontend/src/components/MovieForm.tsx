@@ -36,6 +36,7 @@ function readForm(form: HTMLFormElement): MovieInput {
 function validate(movie: MovieInput): MovieErrors {
   const errors: MovieErrors = {}
   if (!movie.titulo) errors.titulo = 'Informe o título.'
+  if (movie.ano_lancamento === null) errors.ano_lancamento = 'Informe o ano de lançamento.'
   if (movie.generos.length === 0) errors.generos = 'Selecione ao menos um gênero.'
   if (movie.diretores.length === 0) errors.diretores = 'Informe ao menos um diretor.'
   return errors
