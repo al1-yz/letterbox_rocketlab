@@ -7,7 +7,9 @@ import MovieEditPage from './pages/MovieEditPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-  return isActive ? 'text-amber-400' : 'text-zinc-300 hover:text-white'
+  return isActive
+    ? 'text-amber-400 transition-colors'
+    : 'text-zinc-300 transition-colors hover:text-white'
 }
 
 export default function App() {

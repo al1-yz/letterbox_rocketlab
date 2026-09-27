@@ -6,7 +6,7 @@ import { useCreateReview } from '../hooks/queries.ts'
 type ReviewErrors = Partial<Record<keyof ReviewInput, string>>
 
 const fieldClass =
-  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400 aria-[invalid=true]:border-red-500'
+  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 transition-colors focus-visible:outline-2 focus-visible:outline-amber-400 aria-[invalid=true]:border-red-500'
 
 /** Campos obrigatórios também não podem ser só espaços (o backend recusa). */
 function validate(review: ReviewInput): ReviewErrors {
@@ -110,7 +110,7 @@ export default function ReviewForm({ movieId }: { movieId: string }) {
         <button
           type="submit"
           disabled={createReview.isPending}
-          className="rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 hover:bg-amber-300 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          className="rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 transition-colors hover:bg-amber-300 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         >
           {createReview.isPending ? 'Publicando…' : 'Publicar avaliação'}
         </button>

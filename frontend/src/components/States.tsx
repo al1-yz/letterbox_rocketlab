@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
 // Estados de carregamento, erro e vazio, reaproveitados por todas as telas.
@@ -36,7 +37,7 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="mt-4 rounded-md border border-zinc-700 px-4 py-2 hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-amber-400"
+          className="mt-4 rounded-md border border-zinc-700 px-4 py-2 transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-amber-400"
         >
           Tentar novamente
         </button>
@@ -45,6 +46,17 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
   )
 }
 
-export function EmptyState({ message }: { message: string }) {
-  return <p className="py-16 text-center text-zinc-400">{message}</p>
+interface EmptyStateProps {
+  message: string
+  /** Ação opcional abaixo da mensagem (ex.: limpar filtros). */
+  action?: ReactNode
+}
+
+export function EmptyState({ message, action }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center gap-4 py-16 text-center">
+      <p className="text-zinc-400">{message}</p>
+      {action}
+    </div>
+  )
 }

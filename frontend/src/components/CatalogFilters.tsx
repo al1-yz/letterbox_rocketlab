@@ -15,7 +15,7 @@ interface CatalogFiltersProps {
 }
 
 const fieldClass =
-  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400'
+  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 transition-colors focus-visible:outline-2 focus-visible:outline-amber-400'
 
 export default function CatalogFilters({ filters, onChange }: CatalogFiltersProps) {
   const genres = useGenres()
@@ -45,7 +45,7 @@ export default function CatalogFilters({ filters, onChange }: CatalogFiltersProp
         </label>
         <button
           type="submit"
-          className="self-end rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          className="self-end rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         >
           Buscar
         </button>

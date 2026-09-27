@@ -17,7 +17,7 @@ const EMPTY_MOVIE: MovieInput = {
 }
 
 const fieldClass =
-  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400 aria-[invalid=true]:border-red-500'
+  'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 transition-colors focus-visible:outline-2 focus-visible:outline-amber-400 aria-[invalid=true]:border-red-500'
 
 function readForm(form: HTMLFormElement): MovieInput {
   const data = new FormData(form)
@@ -211,11 +211,14 @@ export default function MovieForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 hover:bg-amber-300 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          className="rounded-md bg-amber-400 px-4 py-2 font-semibold text-zinc-950 transition-colors hover:bg-amber-300 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         >
           {isPending ? pendingLabel : submitLabel}
         </button>
-        <Link to={cancelTo} className="text-zinc-300 hover:text-white hover:underline">
+        <Link
+          to={cancelTo}
+          className="text-zinc-300 transition-colors hover:text-white hover:underline"
+        >
           Cancelar
         </Link>
       </div>

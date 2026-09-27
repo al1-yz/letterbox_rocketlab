@@ -29,7 +29,7 @@ export default function MovieDetailPage() {
         <div className="flex justify-end gap-3">
           <Link
             to={`/movies/${id}/edit`}
-            className="rounded-md border border-zinc-700 px-4 py-2 font-semibold hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            className="rounded-md border border-zinc-700 px-4 py-2 font-semibold transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
           >
             Editar
           </Link>

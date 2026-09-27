@@ -9,7 +9,7 @@ interface DeleteMovieButtonProps {
 }
 
 const buttonClass =
-  'rounded-md px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 disabled:opacity-60'
+  'rounded-md px-4 py-2 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 disabled:opacity-60'
 
 export default function DeleteMovieButton({ movieId, title }: DeleteMovieButtonProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)

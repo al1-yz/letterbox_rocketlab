@@ -48,10 +48,11 @@ export default function FlashMessage() {
   }, [flash])
 
   // A região "status" existe sempre; só o texto muda, e o leitor de tela anuncia.
+  // O aviso entra com fade e desce 4 px (@starting-style); isso não atrasa o anúncio.
   return (
     <div role="status" className="mx-auto max-w-6xl px-4">
       {flash && (
-        <p className="mt-4 rounded-md border border-green-800 bg-green-950 px-4 py-2 text-green-300">
+        <p className="mt-4 rounded-md border border-green-800 bg-green-950 px-4 py-2 text-green-300 motion-safe:transition-[opacity,translate] motion-safe:duration-250 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0">
           {flash.message}
         </p>
       )}

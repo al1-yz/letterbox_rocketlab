@@ -7,7 +7,7 @@ interface PaginationProps {
 }
 
 const buttonClass =
-  'rounded-md border border-zinc-700 px-4 py-2 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-amber-400'
+  'rounded-md border border-zinc-700 px-4 py-2 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-amber-400'
 
 /**
  * Texto digitado → página entre 1 e pages ("007" → 7, "000" e negativos → 1, acima do
@@ -96,7 +96,7 @@ export default function Pagination({ page, pages, onChange }: PaginationProps) {
             value={text}
             onChange={(event) => setDraft({ page, text: event.target.value })}
             onBlur={handleBlur}
-            className="w-24 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400"
+            className="w-24 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 transition-colors focus-visible:outline-2 focus-visible:outline-amber-400"
           />
         </label>
         <button type="submit" className={buttonClass}>

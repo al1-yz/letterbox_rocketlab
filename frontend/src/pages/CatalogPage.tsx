@@ -34,16 +34,35 @@ export default function CatalogPage() {
   } else if (movies.isError) {
     results = <ErrorState error={movies.error} onRetry={() => movies.refetch()} />
   } else if (movies.data.items.length === 0) {
-    results = <EmptyState message="Nenhum filme encontrado com esses filtros." />
+    // Só busca e gênero esvaziam o catálogo; limpar mantém a ordenação e volta à página 1.
+    const filtering = filters.q !== '' || filters.genre !== ''
+    results = (
+      <EmptyState
+        message="Nenhum filme encontrado com esses filtros."
+        action={
+          filtering && (
+            <button
+              type="button"
+              onClick={() => updateFilters({ q: '', genre: '' })}
+              className="rounded-md border border-zinc-700 px-4 py-2 transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-amber-400"
+            >
+              Limpar filtros
+            </button>
+          )
+        }
+      />
+    )
   } else {
     const { items, total, page, pages } = movies.data
     results = (
-      // Enquanto a próxima página carrega, a atual continua visível e esmaecida.
+      // Enquanto a próxima página carrega, a grade atual esmaece e desce 4 px; ao chegar a
+      // resposta, volta em 200 ms. É só CSS sobre essa troca de classe: não atrasa a busca
+      // nem a exibição. A paginação fica parada para não se mover sob o cursor.
       <div aria-busy={movies.isPlaceholderData} className="flex flex-col gap-6">
         <p className="text-sm text-zinc-400">{pluralize(total, 'filme', 'filmes')}</p>
         <ul
-          className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 ${
-            movies.isPlaceholderData ? 'opacity-60' : ''
+          className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out ${
+            movies.isPlaceholderData ? 'opacity-60 motion-safe:translate-y-1' : ''
           }`}
         >
           {items.map((movie) => (
