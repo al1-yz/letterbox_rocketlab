@@ -10,31 +10,38 @@ const buttonClass =
   'rounded-md border border-zinc-700 px-4 py-2 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-amber-400'
 
 /**
- * Texto digitado → página válida, também em texto: só dígitos, entre 1 e pages.
- * Vazio continua vazio para dar para apagar e digitar outro número.
+ * Texto digitado → página entre 1 e pages ("007" → 7, "000" e negativos → 1, acima do
+ * total → última). null quando não é um inteiro: vazio, "1.5", "12a".
  */
-function clampPage(text: string, pages: number): string {
-  const digits = text.replace(/\D/g, '')
-  if (digits === '') return ''
-  if (text.trim().startsWith('-')) return '1'
-  return String(Math.min(Math.max(Number(digits), 1), pages))
+function parsePage(text: string, pages: number): number | null {
+  const value = text.trim()
+  if (/^-\d+$/.test(value)) return 1
+  if (!/^\d+$/.test(value)) return null
+  return Math.min(Math.max(Number(value), 1), pages)
 }
 
 export default function Pagination({ page, pages, onChange }: PaginationProps) {
-  // O rascunho fica ligado à página em que foi digitado: se a página mudar
-  // (botões, URL, Voltar), o campo volta a mostrar a página atual.
+  // Rascunho livre enquanto se digita, normalizado só ao sair do campo ou enviar.
+  // Fica ligado à página em que foi digitado: se a página mudar (botões, URL,
+  // Voltar), o campo volta a mostrar a página atual.
   const [draft, setDraft] = useState<{ page: number; text: string } | null>(null)
 
   if (pages <= 1) return null
 
   const text = draft?.page === page ? draft.text : String(page)
 
+  function handleBlur(): void {
+    const target = parsePage(text, pages)
+    // Inválido: o campo volta a mostrar a página atual.
+    setDraft(target === null ? null : { page, text: String(target) })
+  }
+
   function handleJump(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     setDraft(null)
-    const target = Number(clampPage(text, pages))
-    // Vazio (0) ou a própria página atual: nada a fazer.
-    if (target !== 0 && target !== page) onChange(target)
+    const target = parsePage(text, pages)
+    // Inválido ou a própria página atual: nenhuma navegação.
+    if (target !== null && target !== page) onChange(target)
   }
 
   return (
@@ -87,10 +94,8 @@ export default function Pagination({ page, pages, onChange }: PaginationProps) {
             inputMode="numeric"
             autoComplete="off"
             value={text}
-            onChange={(event) => setDraft({ page, text: clampPage(event.target.value, pages) })}
-            onBlur={() => {
-              if (text === '') setDraft(null)
-            }}
+            onChange={(event) => setDraft({ page, text: event.target.value })}
+            onBlur={handleBlur}
             className="w-24 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400"
           />
         </label>

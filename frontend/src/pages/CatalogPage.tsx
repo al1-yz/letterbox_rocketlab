@@ -8,18 +8,20 @@ import { useCatalogFilters } from '../hooks/useCatalogFilters.ts'
 import { pluralize } from '../utils/format.ts'
 
 export default function CatalogPage() {
-  const { filters, updateFilters } = useCatalogFilters()
+  const { filters, pageParam, updateFilters } = useCatalogFilters()
   const movies = useMovies(filters)
 
-  // ?page=99999 digitado na URL: com o total real conhecido (não o da página
-  // anterior mantida na tela), a página passa a ser a última válida.
+  // Regra única para a página na URL: valor inválido já chega como 1; acima da última
+  // vira a última quando o total real é conhecido (não o da página anterior mantida
+  // na tela); a página 1 fica sem o parâmetro. Busca, gênero e ordenação são mantidos.
   const lastPage =
     movies.isSuccess && !movies.isPlaceholderData ? Math.max(movies.data.pages, 1) : null
-  const correctedPage = lastPage !== null && filters.page > lastPage ? lastPage : null
+  const validPage = lastPage === null ? filters.page : Math.min(filters.page, lastPage)
+  const canonicalParam = validPage > 1 ? String(validPage) : null
   useEffect(() => {
-    // replace: o Voltar do navegador não retorna para a URL impossível.
-    if (correctedPage !== null) updateFilters({ page: correctedPage }, { replace: true })
-  }, [correctedPage, updateFilters])
+    // replace: o Voltar do navegador não retorna para a URL corrigida.
+    if (pageParam !== canonicalParam) updateFilters({ page: validPage }, { replace: true })
+  }, [pageParam, canonicalParam, validPage, updateFilters])
 
   function goToPage(page: number): void {
     updateFilters({ page })
@@ -27,7 +29,7 @@ export default function CatalogPage() {
   }
 
   let results
-  if (movies.isPending || correctedPage !== null) {
+  if (movies.isPending || validPage !== filters.page) {
     results = <LoadingState label="Carregando filmes…" />
   } else if (movies.isError) {
     results = <ErrorState error={movies.error} onRetry={() => movies.refetch()} />

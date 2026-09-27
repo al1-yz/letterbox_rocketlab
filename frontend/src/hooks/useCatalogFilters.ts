@@ -11,13 +11,15 @@ function isSort(value: string | null): value is MovieSort {
 export function useCatalogFilters() {
   const [params, setParams] = useSearchParams()
 
-  const page = Number(params.get('page'))
+  // Só dígitos contam como página: 0, negativo, decimal ou texto viram a página 1.
+  const pageParam = params.get('page')
+  const page = pageParam !== null && /^\d+$/.test(pageParam) ? Number(pageParam) : 1
   const sort = params.get('sort')
   const filters: MovieFilters = {
     q: params.get('q') ?? '',
     genre: params.get('genre') ?? '',
     sort: isSort(sort) ? sort : 'popularity',
-    page: Number.isInteger(page) && page > 0 ? page : 1,
+    page: Number.isSafeInteger(page) && page > 0 ? page : 1,
   }
 
   // replace: corrige a URL sem criar uma entrada nova no histórico.
@@ -32,5 +34,6 @@ export function useCatalogFilters() {
     setParams(search, { replace })
   }
 
-  return { filters, updateFilters }
+  // pageParam: o valor cru da URL, para o catálogo reescrevê-la quando não é canônico.
+  return { filters, pageParam, updateFilters }
 }
