@@ -45,6 +45,7 @@ export default function MovieEditPage() {
         Editar filme
       </h1>
       <MovieForm
+        key={id}
         initial={original}
         submitLabel="Salvar alterações"
         pendingLabel="Salvando…"

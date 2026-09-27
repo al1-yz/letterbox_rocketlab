@@ -71,6 +71,7 @@ async def test_create_movie_rejects_invalid_payload(
 
     assert response.status_code == 422
 
+
 async def test_create_movie_requires_year(client: httpx.AsyncClient) -> None:
     payload = {key: value for key, value in NEW_MOVIE.items() if key != "ano_lancamento"}
 
@@ -78,6 +79,7 @@ async def test_create_movie_requires_year(client: httpx.AsyncClient) -> None:
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["loc"] == ["body", "ano_lancamento"]
+
 
 async def test_create_movie_with_unknown_genre_returns_422_and_creates_nothing(
     client: httpx.AsyncClient,

@@ -71,6 +71,7 @@ async def test_list_movies_sorts(client: httpx.AsyncClient, sort: str, expected:
 
     assert ids(body) == expected
 
+
 async def test_sort_by_title_puts_letters_then_digits_then_symbols(
     client: httpx.AsyncClient, session_factory: async_sessionmaker[AsyncSession]
 ) -> None:
@@ -97,6 +98,7 @@ async def test_sort_by_title_puts_letters_then_digits_then_symbols(
         "(500) Days",
         "“Quoted”",  # aspas curvas contam como símbolo
     ]
+
 
 @pytest.mark.parametrize("params", [{"page": 0}, {"page_size": 101}, {"sort": "random"}])
 async def test_list_movies_rejects_invalid_params(

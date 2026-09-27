@@ -63,7 +63,7 @@ class MovieCreate(BaseModel):
 
     titulo: Titulo
     # Obrigatório no cadastro; a coluna continua anulável por compatibilidade com a base.
-    ano_lancamento: int    
+    ano_lancamento: int
     sinopse: Sinopse | None = None
     url_poster: UrlPoster | None = None
     generos: Generos

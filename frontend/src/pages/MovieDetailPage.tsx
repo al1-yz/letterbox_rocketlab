@@ -42,7 +42,7 @@ export default function MovieDetailPage() {
         <h2 id="reviews-title" className="text-2xl font-bold">
           Avaliações
         </h2>
-        <ReviewForm movieId={id} />
+        <ReviewForm key={id} movieId={id} />
         {reviews.isPending && <LoadingState label="Carregando avaliações…" />}
         {reviews.isError && <ErrorState error={reviews.error} onRetry={() => reviews.refetch()} />}
         {reviews.isSuccess && <ReviewList reviews={reviews.data} />}

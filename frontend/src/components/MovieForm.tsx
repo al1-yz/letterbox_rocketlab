@@ -33,12 +33,21 @@ function readForm(form: HTMLFormElement): MovieInput {
   }
 }
 
-function validate(movie: MovieInput): MovieErrors {
+/**
+ * Gênero e diretor: obrigatórios no cadastro; na edição, só se o filme já os tinha.
+ * Filmes importados sem eles podem ter outros campos editados, e a lista que continua
+ * vazia não entra no PATCH (changedFields só envia o que mudou).
+ */
+function validate(movie: MovieInput, initial: MovieInput, creating: boolean): MovieErrors {
   const errors: MovieErrors = {}
   if (!movie.titulo) errors.titulo = 'Informe o título.'
   if (movie.ano_lancamento === null) errors.ano_lancamento = 'Informe o ano de lançamento.'
-  if (movie.generos.length === 0) errors.generos = 'Selecione ao menos um gênero.'
-  if (movie.diretores.length === 0) errors.diretores = 'Informe ao menos um diretor.'
+  if (movie.generos.length === 0 && (creating || initial.generos.length > 0)) {
+    errors.generos = 'Selecione ao menos um gênero.'
+  }
+  if (movie.diretores.length === 0 && (creating || initial.diretores.length > 0)) {
+    errors.diretores = 'Informe ao menos um diretor.'
+  }
   return errors
 }
 
@@ -82,7 +91,8 @@ export default function MovieForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     const movie = readForm(event.currentTarget)
-    const found = validate(movie)
+    // Sem initial (valor padrão EMPTY_MOVIE), o formulário é de cadastro.
+    const found = validate(movie, initial, initial === EMPTY_MOVIE)
     setClientErrors(found)
     if (Object.keys(found).length === 0) onSubmit(movie)
   }

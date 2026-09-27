@@ -73,6 +73,7 @@ async def genre_names(session: AsyncSession, movie_ids: Sequence[str]) -> dict[s
 
 def order_movies(statement: Select, sort: MovieSort, *, searching: bool) -> Select:
     if sort == "title":
+        # Mesmas expressões do índice ix_dim_movies_titulo_ordem (ver models.py).
         return statement.order_by(*TITLE_SORT_KEY, DimMovie.sk_movie_id)
     if sort == "recent":
         return statement.order_by(DimMovie.ano_lancamento.desc(), DimMovie.sk_movie_id.desc())

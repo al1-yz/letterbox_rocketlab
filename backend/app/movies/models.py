@@ -106,6 +106,7 @@ END"""
     text("lower(titulo)"),
 )
 
+
 class DimMovie(Base):
     """Metadados descritivos de um filme."""
 
