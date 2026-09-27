@@ -26,7 +26,7 @@ export default function MovieEditPage() {
   function handleSubmit(edited: MovieInput): void {
     const changes = changedFields(original, edited)
     if (Object.keys(changes).length === 0) {
-      const state: FlashState = { message: 'Nenhuma alteração para salvar.' }
+      const state: FlashState = { message: 'Nenhuma alteração foi feita.' }
       navigate(detailPath, { state })
       return
     }
